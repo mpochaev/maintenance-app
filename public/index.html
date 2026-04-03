@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Система заявок на техобслуживание</title>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <section id="loginView" class="login-card">
+        <h1>Система заявок</h1>
+
+        <form id="loginForm" class="stack">
+          <input name="username" placeholder="Логин" value="employee" required />
+          <input name="password" type="password" placeholder="Пароль" value="1234" required />
+          <button type="submit">Войти</button>
+        </form>
+
+        <div class="demo-box">
+          <strong>Демо-пользователи:</strong>
+          <div>employee / 1234 — сотрудник</div>
+          <div>admin / 1234 — администратор</div>
+          <div>sergey / 1234 — техник №1</div>
+          <div>alexey / 1234 — техник №2</div>
+        </div>
+      </section>
+
+      <section id="appView" class="hidden">
+        <header class="topbar">
+          <div>
+            <h1 id="pageTitle">Система заявок на техобслуживание</h1>
+            <p id="welcomeText" class="muted"></p>
+          </div>
+          <button id="logoutBtn" class="ghost">Выйти</button>
+        </header>
+
+        <div id="messageBox" class="message hidden"></div>
+
+        <section class="grid two">
+          <article class="card" id="createCard">
+            <h2>Новая заявка</h2>
+            <form id="createForm" class="stack">
+              <input name="title" placeholder="Короткий заголовок" required />
+              <textarea name="description" placeholder="Описание проблемы" rows="4" required></textarea>
+              <select name="equipment_id" id="equipmentSelect" required></select>
+              <select name="priority" required>
+                <option value="Низкий">Низкий</option>
+                <option value="Средний" selected>Средний</option>
+                <option value="Высокий">Высокий</option>
+              </select>
+              <input name="applicant_name" placeholder="ФИО заявителя" required />
+              <button type="submit">Создать заявку</button>
+            </form>
+          </article>
+
+          <article class="card">
+            <h2>Фильтры</h2>
+            <form id="filterForm" class="stack compact">
+              <select name="status" id="statusFilter">
+                <option value="">Все статусы</option>
+                <option value="Новая">Новая</option>
+                <option value="В работе">В работе</option>
+                <option value="Выполнена">Выполнена</option>
+                <option value="Отклонена">Отклонена</option>
+              </select>
+              <select name="priority" id="priorityFilter">
+                <option value="">Все приоритеты</option>
+                <option value="Низкий">Низкий</option>
+                <option value="Средний">Средний</option>
+                <option value="Высокий">Высокий</option>
+              </select>
+              <label>Дата от <input type="date" name="dateFrom" id="dateFrom" /></label>
+              <label>Дата до <input type="date" name="dateTo" id="dateTo" /></label>
+              <button type="button" id="resetFiltersBtn" class="ghost">Сбросить фильтры</button>
+            </form>
+          </article>
+        </section>
+
+        <section class="card">
+          <div class="section-head">
+            <h2 id="requestsTitle">Список заявок</h2>
+            <span id="requestsCount" class="muted"></span>
+          </div>
+          <div id="requestsTable"></div>
+        </section>
+
+        <section class="grid two" id="referenceGrid">
+          <article class="card">
+            <h2>Техники</h2>
+            <div id="techniciansList"></div>
+          </article>
+
+          <article class="card">
+            <h2>Оборудование</h2>
+            <div id="equipmentList"></div>
+          </article>
+        </section>
+
+        <section class="card">
+          <div class="section-head">
+            <h2>Отчёты</h2>
+            <div class="inline-filters">
+              <label>Период от <input type="date" id="reportFrom" /></label>
+              <label>до <input type="date" id="reportTo" /></label>
+            </div>
+          </div>
+          <div class="report-grid">
+            <div class="report-card">
+              <h3>Количество заявок по статусам</h3>
+              <div id="reportStatus"></div>
+            </div>
+            <div class="report-card">
+              <h3>Среднее время выполнения</h3>
+              <div id="reportAvg"></div>
+            </div>
+            <div class="report-card wide">
+              <h3>Топ оборудования по количеству поломок</h3>
+              <div id="reportTop"></div>
+            </div>
+          </div>
+        </section>
+      </section>
+    </div>
+
+    <script src="/app.js"></script>
+  </body>
+</html>
