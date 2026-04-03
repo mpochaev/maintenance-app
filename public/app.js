@@ -30,6 +30,11 @@ const logoutBtn = document.getElementById('logoutBtn');
 const resetFiltersBtn = document.getElementById('resetFiltersBtn');
 const reportFrom = document.getElementById('reportFrom');
 const reportTo = document.getElementById('reportTo');
+const topGrid = createCard.parentElement;
+const filterCard = filterForm.closest('.card');
+const requestsSection = requestsTable.closest('section');
+const referenceGrid = document.getElementById('referenceGrid');
+const reportsSection = reportStatus.closest('section.card');
 
 function showMessage(text, type = 'success') {
   messageBox.textContent = text;
@@ -39,6 +44,10 @@ function showMessage(text, type = 'success') {
 function hideMessage() {
   messageBox.className = 'message hidden';
   messageBox.textContent = '';
+}
+
+function setVisible(element, visible) {
+  element.classList.toggle('hidden', !visible);
 }
 
 async function api(url, options = {}) {
@@ -59,8 +68,15 @@ function getId(value) {
   return Number(value) || value;
 }
 
+function getRecordId(value) {
+  if (!value) return null;
+  if (Array.isArray(value)) return getRecordId(value[0]);
+  if (value.records) return getRecordId(value.records[0]);
+  return value.Id ?? value.id ?? value.ID ?? null;
+}
+
 function linkValue(id) {
-  return id ? [Number(id)] : [];
+  return id ? Number(id) : null;
 }
 
 function readDate(value) {
@@ -80,6 +96,10 @@ function dateOnly(value) {
 
 function isTechnicianUser() {
   return state.user?.role === 'technician';
+}
+
+function isEmployeeUser() {
+  return state.user?.role === 'employee';
 }
 
 function getCurrentTechnician() {
@@ -163,7 +183,7 @@ function renderReferences() {
   equipmentList.innerHTML = '<div class="list">' + state.equipment.map((item) => `
     <div class="list-item">
       <strong>${item.name}</strong>
-      <div class="note">Локация: ${item.location || '—'}</div>
+      <div class="note">Где: ${item.location || '—'}</div>
       <div class="note">Тип: ${item.type || '—'}</div>
     </div>
   `).join('') + '</div>';
@@ -288,12 +308,19 @@ function renderReports() {
 }
 
 function renderRoleView() {
+  const role = state.user?.role;
   const currentTechnician = getCurrentTechnician();
 
-  if (isTechnicianUser()) {
+  topGrid.classList.toggle('single-card', ['employee', 'admin', 'technician'].includes(role));
+  setVisible(createCard, role === 'employee');
+  setVisible(filterCard, role !== 'employee');
+  setVisible(requestsSection, role !== 'employee');
+  setVisible(referenceGrid, role !== 'employee');
+  setVisible(reportsSection, role !== 'employee');
+
+  if (role === 'technician') {
     pageTitle.textContent = 'Мои заявки';
     requestsTitle.textContent = 'Мои заявки';
-    createCard.classList.add('hidden');
     welcomeText.textContent = currentTechnician
       ? `${state.user.name} (техник, ID ${currentTechnician.Id})`
       : `${state.user.name} (техник)`;
@@ -302,7 +329,6 @@ function renderRoleView() {
 
   pageTitle.textContent = 'Система заявок на техобслуживание';
   requestsTitle.textContent = 'Список заявок';
-  createCard.classList.remove('hidden');
   welcomeText.textContent = `${state.user.name} (${state.user.role})`;
 }
 
@@ -385,8 +411,12 @@ createForm.addEventListener('submit', async (event) => {
       })
     });
 
-    await createStatusHistory(created.Id || created.id, '', 'Новая');
+    await createStatusHistory(getRecordId(created), '', 'Новая');
     createForm.reset();
+    if (isEmployeeUser()) {
+      showMessage('Заявка создана', 'success');
+      return;
+    }
     await refreshData('Заявка создана');
   } catch (error) {
     showMessage(error.message, 'error');

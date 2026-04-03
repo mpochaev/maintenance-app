@@ -1,7 +1,7 @@
 {
   "name": "maintenance-requests-app",
   "version": "1.0.0",
-  "description": "Простой учебный проект системы заявок на техобслуживание",
+  "description": "Система заявок на техобслуживание",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"

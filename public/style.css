@@ -34,6 +34,10 @@ body {
   margin-bottom: 18px;
 }
 .grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.grid.two.single-card {
+  grid-template-columns: minmax(320px, 640px);
+  justify-content: center;
+}
 .stack { display: grid; gap: 12px; }
 .stack.compact { gap: 10px; }
 input, select, textarea, button {
@@ -53,6 +57,14 @@ button {
 button.ghost {
   background: #eef2ff;
   color: #1f2937;
+}
+#logoutBtn {
+  width: auto;
+  padding: 10px 16px;
+  border: 1px solid #d6dbe7;
+  background: #fff;
+  color: #374151;
+  white-space: nowrap;
 }
 button.small {
   width: auto;
@@ -84,6 +96,7 @@ button.small {
 }
 .inline-filters { flex-wrap: wrap; }
 .table-wrap { overflow-x: auto; }
+#referenceGrid { margin-top: 18px; }
 .table {
   width: 100%;
   border-collapse: collapse;

@@ -69,8 +69,10 @@ function getId(value) {
   return Number(value) || value;
 }
 
-async function nocodb(table, method = 'GET', body, recordId) {
-  const url = recordId ? `${getTableUrl(table)}/${recordId}` : getTableUrl(table);
+async function nocodbRaw(table, method = 'GET', body, recordId) {
+  const url = recordId && !['PATCH', 'DELETE'].includes(method)
+    ? `${getTableUrl(table)}/${recordId}`
+    : getTableUrl(table);
   const response = await fetch(url, {
     method,
     headers: {
@@ -97,6 +99,28 @@ async function nocodb(table, method = 'GET', body, recordId) {
   }
 
   return data;
+}
+
+async function nocodb(table, method = 'GET', body, recordId) {
+  const normalizedId = recordId ? Number(recordId) || recordId : null;
+  let payload = undefined;
+
+  if (body && method === 'POST') {
+    payload = Array.isArray(body) ? body : [body.fields ? body : { fields: body }];
+  }
+
+  if (body && method === 'PATCH') {
+    payload = Array.isArray(body) ? body : [{
+      id: normalizedId,
+      ...(body.fields ? body : { fields: body })
+    }];
+  }
+
+  if (method === 'DELETE' && normalizedId) {
+    payload = [{ id: normalizedId }];
+  }
+
+  return nocodbRaw(table, method, payload, recordId);
 }
 
 function auth(req, res, next) {
@@ -158,13 +182,23 @@ app.get('/api/me', (req, res) => {
 
 app.get('/api/bootstrap', auth, async (req, res) => {
   try {
-    const [requestsRaw, equipmentRaw, techniciansRaw, assignmentsRaw, historyRaw] = await Promise.all([
-      nocodb('requests'),
-      nocodb('equipment'),
-      nocodb('technicians'),
-      nocodb('assignments'),
-      nocodb('status_history')
-    ]);
+    if (req.session.user.role === 'employee') {
+      const equipmentRaw = await nocodb('equipment');
+      return res.json({
+        user: req.session.user,
+        requests: [],
+        equipment: extractRows(equipmentRaw),
+        technicians: [],
+        assignments: [],
+        statusHistory: []
+      });
+    }
+
+    const requestsRaw = await nocodb('requests');
+    const equipmentRaw = await nocodb('equipment');
+    const techniciansRaw = await nocodb('technicians');
+    const assignmentsRaw = await nocodb('assignments');
+    const historyRaw = await nocodb('status_history');
 
     const requests = extractRows(requestsRaw);
     const equipment = extractRows(equipmentRaw);
