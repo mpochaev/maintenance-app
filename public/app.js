@@ -149,6 +149,12 @@ function getLastComment(requestId) {
   return assignment?.comment || '—';
 }
 
+function getRequestHistory(requestId) {
+  return [...state.statusHistory]
+    .filter((item) => Number(getId(item.request_id)) === Number(requestId))
+    .sort((a, b) => new Date(a.CreatedAt) - new Date(b.CreatedAt));
+}
+
 function getFilteredRequests() {
   const form = new FormData(filterForm);
   const status = form.get('status');
@@ -232,6 +238,7 @@ function renderRequests() {
               <td>${formatDate(item.CreatedAt)}</td>
               <td>
                 <div class="actions">
+                  <button class="small ghost" onclick="showRequestHistory(${item.Id})">История</button>
                   ${item.status === 'Новая' ? `
                     <button class="small" onclick="editRequest(${item.Id})">Изменить</button>
                     <button class="small ghost" onclick="assignRequest(${item.Id})">Назначить</button>
@@ -537,6 +544,23 @@ window.closeRequest = function closeRequest(id) {
 
 window.rejectRequest = function rejectRequest(id) {
   finishRequest(id, 'Отклонена');
+};
+
+window.showRequestHistory = function showRequestHistory(id) {
+  const request = state.requests.find((item) => Number(item.Id) === Number(id));
+  const history = getRequestHistory(id);
+
+  if (!history.length) {
+    alert(`История заявки #${id} пока пуста`);
+    return;
+  }
+
+  const lines = history.map((item, index) => {
+    const from = item.old_status || 'Создание';
+    return `${index + 1}. ${formatDate(item.CreatedAt)}: ${from} -> ${item.new_status}`;
+  }).join('\n');
+
+  alert(`История заявки #${id}${request ? `\n${request.title}` : ''}\n\n${lines}`);
 };
 
 (async function init() {
